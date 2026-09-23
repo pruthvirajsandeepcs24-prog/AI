@@ -1,0 +1,27 @@
+
+environment = {'A': 'Dirty', 'B': 'Dirty'}
+
+def simple_reflex_agent(location):
+    status = environment[location]
+    print("Location:", location, "Status:", status)
+
+    if status == 'Dirty':
+        print("Action: Suck")
+        environment[location] = 'Clean'
+    elif location == 'A':
+        print("Action: Move Right")
+        location = 'B'
+    else:
+        print("Action: Move Left")
+        location = 'A'
+
+    return location
+
+
+
+print("---- vaccum ----")
+environment = {'A': 'Dirty', 'B': 'Dirty'}
+loc = 'A'
+for step in range(6):         
+    loc = simple_reflex_agent(loc)
+
