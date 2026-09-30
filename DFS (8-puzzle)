@@ -1,0 +1,86 @@
+def dfs(initial, goal):
+    stack = [initial]
+    visited = set()
+    parent = {initial: None}
+    iterations = 0
+
+    while stack:
+        state = stack.pop()
+        iterations += 1
+
+        if state == goal:
+            path = []
+
+            while state is not None:
+                path.append(state)
+                state = parent[state]
+
+            return path[::-1], iterations
+
+        if state in visited:
+            continue
+
+        visited.add(state)
+
+      
+        blank = state.index('_')
+        row, col = divmod(blank, 3)
+
+        moves = []
+
+        if row > 0:
+            moves.append(blank - 3)       # Up
+        if row < 2:
+            moves.append(blank + 3)       # Down
+        if col > 0:
+            moves.append(blank - 1)       # Left
+        if col < 2:
+            moves.append(blank + 1)       # Right
+
+        for pos in reversed(moves):
+            new_state = list(state)
+
+            new_state[blank], new_state[pos] = (
+                new_state[pos],
+                new_state[blank]
+            )
+
+            new_state = tuple(new_state)
+
+            if new_state not in visited and new_state not in parent:
+                parent[new_state] = state
+                stack.append(new_state)
+
+    return None, iterations
+
+
+initial = (
+    1, 2, 3,
+    '_', 4, 6,
+    7, 5, 8
+)
+
+
+goal = (
+    8, 7, 6,
+    '_', 5, 4,
+    3, 2, 1
+)
+
+
+path, iterations = dfs(initial, goal)
+
+
+if path:
+    for state in path:
+        print(state[0:3])
+        print(state[3:6])
+        print(state[6:9])
+        print()
+
+    print("Goal Found!")
+    print("Number of iterations:", iterations)
+
+else:
+    print("No solution")
+    print("Number of iterations:", iterations)
