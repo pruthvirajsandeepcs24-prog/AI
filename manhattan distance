@@ -1,0 +1,141 @@
+import heapq
+
+# Goal state
+GOAL = (1, 2, 3,
+        4, 5, 6,
+        7, 8, 0)
+
+
+# ---------------------------------------
+# Heuristic 1: Misplaced Tiles
+# ---------------------------------------
+def misplaced_tiles(state):
+    count = 0
+    for i in range(9):
+        if state[i] != 0 and state[i] != GOAL[i]:
+            count += 1
+    return count
+
+
+# ---------------------------------------
+# Heuristic 2: Manhattan Distance
+# ---------------------------------------
+def manhattan_distance(state):
+    distance = 0
+    for i in range(9):
+        tile = state[i]
+        if tile == 0:
+            continue
+
+        current_row, current_col = i // 3, i % 3
+        goal_index = GOAL.index(tile)
+        goal_row, goal_col = goal_index // 3, goal_index % 3
+
+        distance += abs(current_row - goal_row) + abs(current_col - goal_col)
+
+    return distance
+
+
+# ---------------------------------------
+# Generate possible next states
+# ---------------------------------------
+def get_neighbors(state):
+    neighbors = []
+    zero = state.index(0)
+    row, col = zero // 3, zero % 3
+
+    moves = [(-1, 0), (1, 0), (0, -1), (0, 1)]  # Up, Down, Left, Right
+
+    for dr, dc in moves:
+        new_row, new_col = row + dr, col + dc
+
+        if 0 <= new_row < 3 and 0 <= new_col < 3:
+            new_zero = new_row * 3 + new_col
+            new_state = list(state)
+            new_state[zero], new_state[new_zero] = new_state[new_zero], new_state[zero]
+            neighbors.append(tuple(new_state))
+
+    return neighbors
+
+
+# ---------------------------------------
+# Print puzzle state
+# ---------------------------------------
+def print_state(state):
+    for i in range(0, 9, 3):
+        print(state[i:i + 3])
+    print()
+
+
+# ---------------------------------------
+# A* Search Algorithm
+# ---------------------------------------
+def a_star(start, heuristic):
+    priority_queue = []
+    h = heuristic(start)
+    g = 0
+    f = g + h
+
+    heapq.heappush(priority_queue, (f, g, start, [start]))
+    visited = set()
+
+    while priority_queue:
+        f, g, current, path = heapq.heappop(priority_queue)
+
+        if current in visited:
+            continue
+
+        visited.add(current)
+
+        # Goal test
+        if current == GOAL:
+            return path
+
+        # Generate children
+        for neighbor in get_neighbors(current):
+            if neighbor not in visited:
+                new_g = g + 1
+                new_f = new_g + heuristic(neighbor)
+                heapq.heappush(
+                    priority_queue,
+                    (new_f, new_g, neighbor, path + [neighbor])
+                )
+
+    return None
+
+
+# ---------------------------------------
+# Main Execution
+# ---------------------------------------
+if __name__ == "__main__":
+    start_state = (
+        1, 2, 3,
+        4, 0, 6,
+        7, 5, 8
+    )
+
+    print("8-PUZZLE A* SEARCH")
+    print("------------------")
+    print("Initial State:")
+    print_state(start_state)
+
+    # Change to 1 for Misplaced Tiles or 2 for Manhattan Distance
+    choice = 2  
+
+    if choice == 1:
+        print("Running A* using Misplaced Tiles...\n")
+        solution = a_star(start_state, misplaced_tiles)
+    else:
+        print("Running A* using Manhattan Distance...\n")
+        solution = a_star(start_state, manhattan_distance)
+
+    # Display Solution
+    if solution:
+        print("Solution Found!")
+        print("Number of moves:", len(solution) - 1)
+        print("\nPath:")
+        for step, state in enumerate(solution):
+            print(f"Step {step}:")
+            print_state(state)
+    else:
+        print("No solution found.")
