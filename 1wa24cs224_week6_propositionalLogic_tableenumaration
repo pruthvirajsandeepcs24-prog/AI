@@ -1,0 +1,39 @@
+from itertools import product
+
+def implies(a, b):
+    return not a or b
+
+print("P Q R | KB | R | R->P | Q->R")
+
+for P, Q, R in product([False, True], repeat=3):
+
+    kb = (
+        implies(Q, P)
+        and implies(P, not Q)
+        and (Q or R)
+    )
+
+    query1 = R
+    query2 = implies(R, P)
+    query3 = implies(Q, R)
+
+    print(P, Q, R, "|", kb, "|",
+          query1, "|", query2, "|", query3)
+
+    if kb and not query1:
+        print("KB does not entail R")
+
+print("\nChecking entailment:")
+
+for name, query in [
+    ("R", lambda P, Q, R: R),
+    ("R -> P", lambda P, Q, R: implies(R, P)),
+    ("Q -> R", lambda P, Q, R: implies(Q, R))
+]:
+    result = all(
+        query(P, Q, R)
+        for P, Q, R in product([False, True], repeat=3)
+        if implies(Q, P) and implies(P, not Q) and (Q or R)
+    )
+
+    print(na
