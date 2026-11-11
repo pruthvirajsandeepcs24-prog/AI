@@ -1,0 +1,88 @@
+
+# Forward Chaining in First Order Logic
+
+# Initial Knowledge Base (Facts)
+KB = [
+    ("American", "Robert"),
+    ("Enemy", "A", "America"),
+    ("Owns", "A", "T1"),
+    ("Missile", "T1")
+]
+
+# Goal
+goal = ("Criminal", "Robert")
+
+print("Initial Facts:")
+for fact in KB:
+    print(fact)
+
+print("\nForward Chaining:\n")
+
+# Forward Chaining
+while True:
+    new_facts = []
+
+    for fact in KB:
+
+        # Rule 1: Missiles are weapons
+        if fact[0] == "Missile":
+            new = ("Weapon", fact[1])
+            if new not in KB and new not in new_facts:
+                new_facts.append(new)
+
+        # Rule 2: Enemy of America is hostile
+        if fact[0] == "Enemy" and fact[2] == "America":
+            new = ("Hostile", fact[1])
+            if new not in KB and new not in new_facts:
+                new_facts.append(new)
+
+    # Rule 3: Missiles owned by A were sold by Robert
+    for f1 in KB:
+        for f2 in KB:
+            if (f1[0] == "Missile" and
+                f2[0] == "Owns" and
+                f1[1] == f2[1] and
+                f2[1] == "T1" and f2[2] == "A"):
+
+                new = ("Sells", "Robert", f1[1], "A")
+                if new not in KB and new not in new_facts:
+                    new_facts.append(new)
+
+    KB.extend(new_facts)
+
+    for fact in new_facts:
+        print(fact)
+
+    # Rule 4: American who sells weapons to hostile nation
+    for f1 in KB:
+        for f2 in KB:
+            for f3 in KB:
+                for f4 in KB:
+
+                    if (f1[0] == "American" and
+                        f2[0] == "Weapon" and
+                        f3[0] == "Sells" and
+                        f4[0] == "Hostile" and
+                        f3[1] == f1[1] and
+                        f3[2] == f2[1] and
+                        f3[3] == f4[1]):
+
+                        new = ("Criminal", f1[1])
+
+                        if new not in KB:
+                            KB.append(new)
+                            print(new)
+
+    if goal in KB:
+        break
+
+    if not new_facts:
+        break
+
+# Display Result
+print("\nQuery:", goal)
+if goal in KB:
+    print("Result: PROVED")
+    print("Robert is Criminal")
+else:
+    print("Result: NOT PROVED")
