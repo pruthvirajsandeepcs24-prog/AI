@@ -1,0 +1,64 @@
+tree = (
+    "MAX",
+    [
+        ("MIN", [
+            ("MAX", [10, 9]),
+            ("MAX", [14, 18])
+        ]),
+        ("MIN", [
+            ("MAX", [5, 4]),
+            ("MAX", [50, 3])
+        ])
+    ]
+)
+
+pruned = []
+
+def get_leaves(node):
+    if isinstance(node, int):
+        return [node]
+
+    result = []
+    for child in node[1]:
+        result += get_leaves(child)
+    return result
+
+
+def alpha_beta(node, alpha, beta):
+
+    if isinstance(node, int):
+        return node
+
+    if node[0] == "MAX":
+        value = float('-inf')
+
+        for i, child in enumerate(node[1]):
+            value = max(value, alpha_beta(child, alpha, beta))
+            alpha = max(alpha, value)
+
+            if alpha >= beta:
+                for remaining in node[1][i+1:]:
+                    pruned.extend(get_leaves(remaining))
+                break
+
+        return value
+
+    else:
+        value = float('inf')
+
+        for i, child in enumerate(node[1]):
+            value = min(value, alpha_beta(child, alpha, beta))
+            beta = min(beta, value)
+
+            if beta <= alpha:
+                for remaining in node[1][i+1:]:
+                    pruned.extend(get_leaves(remaining))
+                break
+
+        return value
+
+
+result = alpha_beta(tree, float('-inf'), float('inf'))
+
+print("Root Node Value:", result)
+print("Pruned Nodes:", pruned)
