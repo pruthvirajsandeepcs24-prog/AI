@@ -1,0 +1,81 @@
+
+def unify(a, b, sub):
+    if a == b:
+        return True
+    if a.islower():
+        sub[a] = b
+        return True
+    if b.islower():
+        sub[b] = a
+        return True
+    return False
+
+
+def apply(lit, sub):
+    sign, pred, args = lit
+    args = tuple(sub.get(x, x) for x in args)
+    return (sign, pred, args)
+
+
+def resolve(c1, c2):
+    for i, a in enumerate(c1):
+        for j, b in enumerate(c2):
+            if a[0] != b[0] and a[1] == b[1]:
+                sub = {}
+                if len(a[2]) != len(b[2]):
+                    continue
+
+                if all(unify(x, y, sub)
+                       for x, y in zip(a[2], b[2])):
+                    result = [
+                        apply(x, sub)
+                        for k, x in enumerate(c1) if k != i
+                    ]
+                    result += [
+                        apply(x, sub)
+                        for k, x in enumerate(c2) if k != j
+                    ]
+                    return result
+    return None
+
+
+# Given clauses in CNF
+
+C1 = [(False, "food", ("x",)),
+      (True, "likes", ("John", "x"))]
+
+C4 = [(False, "eats", ("y", "z")),
+      (True, "killed", ("y",)),
+      (True, "food", ("z",))]
+
+C5 = [(True, "eats", ("Anil", "Peanuts"))]
+
+C6 = [(True, "alive", ("Anil",))]
+
+C9 = [(False, "alive", ("k",)),
+      (False, "killed", ("k",))]
+
+# Negation of goal
+C10 = [(False, "likes", ("John", "Peanuts"))]
+
+# Resolution steps
+r1 = resolve(C1, C10)
+print("Step 1:", r1)
+
+r2 = resolve(C4, r1)
+print("Step 2:", r2)
+
+r3 = resolve(C5, r2)
+print("Step 3:", r3)
+
+r4 = resolve(C9, r3)
+print("Step 4:", r4)
+
+r5 = resolve(C6, r4)
+print("Step 5:", r5)
+
+if r5 == []:
+    print("\nEmpty clause obtained.")
+    print("John likes Peanuts - PROVED")
+else:
+    print("Proof not found")
