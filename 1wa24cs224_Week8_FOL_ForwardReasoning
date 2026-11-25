@@ -1,0 +1,111 @@
+facts = [
+    ("American", "Robert"),
+    ("Owns", "A", "T1"),
+    ("Missile", "T1"),
+    ("Enemy", "A", "America")
+]
+
+# Rules: (premises, conclusion)
+rules = [
+    (
+        [("Missile", "x")],
+        ("Weapon", "x")
+    ),
+    (
+        [("Missile", "x"), ("Owns", "A", "x")],
+        ("Sells", "Robert", "x", "A")
+    ),
+    (
+        [("Enemy", "x", "America")],
+        ("Hostile", "x")
+    ),
+    (
+        [
+            ("American", "p"),
+            ("Weapon", "q"),
+            ("Sells", "p", "q", "r"),
+            ("Hostile", "r")
+        ],
+        ("Criminal", "p")
+    )
+]
+
+# Check whether a term is a variable
+def is_variable(x):
+    return x.islower()
+
+# Match a pattern with a fact
+def match(pattern, fact, binding):
+    if pattern[0] != fact[0]:
+        return None
+
+    if len(pattern) != len(fact):
+        return None
+
+    new_binding = binding.copy()
+
+    for p, f in zip(pattern[1:], fact[1:]):
+        if is_variable(p):
+            if p in new_binding:
+                if new_binding[p] != f:
+                    return None
+            else:
+                new_binding[p] = f
+        elif p != f:
+            return None
+
+    return new_binding
+
+# Forward chaining
+def forward_chaining(facts, rules):
+
+    while True:
+        new_facts = []
+
+        for premises, conclusion in rules:
+
+            bindings = [{}]
+
+            for premise in premises:
+                updated = []
+
+                for binding in bindings:
+                    for fact in facts:
+                        result = match(premise, fact, binding)
+
+                        if result is not None:
+                            updated.append(result)
+
+                bindings = updated
+
+            for binding in bindings:
+                result = tuple(
+                    binding.get(x, x) for x in conclusion
+                )
+
+                if result not in facts and result not in new_facts:
+                    new_facts.append(result)
+
+        if not new_facts:
+            break
+
+        facts.extend(new_facts)
+
+        for fact in new_facts:
+            print("Inferred:", fact)
+
+    return facts
+
+
+# Execute the algorithm
+print("Forward Chaining Started")
+
+result = forward_chaining(facts, rules)
+
+# Check the query
+query = ("Criminal", "Robert")
+
+if query in result:
+    print("\nRobert is Criminal")
+else:
+    print("\nProof not found")
